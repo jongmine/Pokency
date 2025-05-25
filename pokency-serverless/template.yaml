@@ -37,6 +37,11 @@ Resources:
           Properties:
             Path: /pokemon/{name}
             Method: get
+        GetPokemonList:
+          Type: Api
+          Properties:
+            Path: /pokemon
+            Method: get
 
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group
