@@ -42,6 +42,11 @@ Resources:
           Properties:
             Path: /pokemon
             Method: get
+        GetPokemonEvolution:
+          Type: Api
+          Properties:
+            Path: /pokemon/{name}/evolution
+            Method: get
 
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group

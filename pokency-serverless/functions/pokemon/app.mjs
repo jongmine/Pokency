@@ -17,6 +17,22 @@ export const lambdaHandler = async (event) => {
     }
   }
 
+  // 진화 트리 조회
+  if (httpMethod === "GET" && path.match(/^\/pokemon\/[^/]+\/evolution$/)) {
+    try {
+      const name = pathParameters?.name;
+      if (!name) return badRequest("Missing Pokémon name in path");
+
+      const { fetchEvolutionChain } = await import(
+        "./service/fetchEvolutionChain.mjs"
+      );
+      const data = await fetchEvolutionChain(name);
+      return ok(data);
+    } catch (err) {
+      return internalError(err.message || "Failed to fetch evolution chain");
+    }
+  }
+
   // 단일 조회
   if (httpMethod === "GET" && pathParameters?.name) {
     try {
