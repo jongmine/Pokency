@@ -47,6 +47,21 @@ Resources:
           Properties:
             Path: /pokemon/{name}/evolution
             Method: get
+        GetPokemonMoves:
+          Type: Api
+          Properties:
+            Path: /pokemon/{name}/moves
+            Method: get
+        GetPokemonAbilities:
+          Type: Api
+          Properties:
+            Path: /pokemon/{name}/abilities
+            Method: get
+        GetTypeEffectiveness:
+          Type: Api
+          Properties:
+            Path: /battle/type-effectiveness
+            Method: get
 
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group

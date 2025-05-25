@@ -33,13 +33,70 @@ export const lambdaHandler = async (event) => {
     }
   }
 
+  // 포켓몬 기술 목록 조회
+  if (httpMethod === "GET" && path.match(/^\/pokemon\/[^/]+\/moves$/)) {
+    try {
+      const name = pathParameters?.name;
+      if (!name) return badRequest("Missing Pokémon name in path");
+
+      const { fetchPokemonMoves } = await import(
+        "./service/fetchPokemonMoves.mjs"
+      );
+      const data = await fetchPokemonMoves(name);
+      return ok(data);
+    } catch (err) {
+      return internalError(err.message || "Failed to fetch Pokémon moves");
+    }
+  }
+
   // 단일 조회
-  if (httpMethod === "GET" && pathParameters?.name) {
+  if (
+    httpMethod === "GET" &&
+    pathParameters?.name &&
+    !path.includes("/evolution") &&
+    !path.includes("/moves") &&
+    !path.includes("/abilities")
+  ) {
     try {
       const data = await fetchPokemonData(pathParameters.name);
       return ok(data);
     } catch (err) {
       return internalError(err.message || "Failed to fetch Pokémon data");
+    }
+  }
+
+  // 타입 상성 조회
+  if (httpMethod === "GET" && path === "/battle/type-effectiveness") {
+    try {
+      const attacker = queryStringParameters?.attacker;
+      const defender = queryStringParameters?.defender;
+      if (!attacker || !defender) {
+        return badRequest("Missing attacker or defender type");
+      }
+
+      const { fetchTypeEffectiveness } = await import(
+        "./service/fetchTypeEffectiveness.mjs"
+      );
+      const result = await fetchTypeEffectiveness(attacker, defender);
+      return ok(result);
+    } catch (err) {
+      return internalError(err.message || "Failed to fetch type effectiveness");
+    }
+  }
+
+  // 포켓몬 능력 조회
+  if (httpMethod === "GET" && path.match(/^\/pokemon\/[^/]+\/abilities$/)) {
+    try {
+      const name = pathParameters?.name;
+      if (!name) return badRequest("Missing Pokémon name in path");
+
+      const { fetchPokemonAbilities } = await import(
+        "./service/fetchPokemonAbilities.mjs"
+      );
+      const data = await fetchPokemonAbilities(name);
+      return ok(data);
+    } catch (err) {
+      return internalError(err.message || "Failed to fetch Pokémon abilities");
     }
   }
 
