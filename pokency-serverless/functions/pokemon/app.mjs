@@ -50,7 +50,13 @@ export const lambdaHandler = async (event) => {
   }
 
   // 단일 조회
-  if (httpMethod === "GET" && pathParameters?.name) {
+  if (
+    httpMethod === "GET" &&
+    pathParameters?.name &&
+    !path.includes("/evolution") &&
+    !path.includes("/moves") &&
+    !path.includes("/abilities")
+  ) {
     try {
       const data = await fetchPokemonData(pathParameters.name);
       return ok(data);
@@ -75,6 +81,22 @@ export const lambdaHandler = async (event) => {
       return ok(result);
     } catch (err) {
       return internalError(err.message || "Failed to fetch type effectiveness");
+    }
+  }
+
+  // 포켓몬 능력 조회
+  if (httpMethod === "GET" && path.match(/^\/pokemon\/[^/]+\/abilities$/)) {
+    try {
+      const name = pathParameters?.name;
+      if (!name) return badRequest("Missing Pokémon name in path");
+
+      const { fetchPokemonAbilities } = await import(
+        "./service/fetchPokemonAbilities.mjs"
+      );
+      const data = await fetchPokemonAbilities(name);
+      return ok(data);
+    } catch (err) {
+      return internalError(err.message || "Failed to fetch Pokémon abilities");
     }
   }
 
