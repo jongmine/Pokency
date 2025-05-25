@@ -1,4 +1,4 @@
-import { fetchPokemonData } from "./service/pokemonService.mjs";
+import { fetchPokemonData } from "./service/fetchSinglePokemon.mjs";
 import { ok, badRequest, internalError } from "./utils/response.mjs";
 
 export const lambdaHandler = async (event) => {
