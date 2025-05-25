@@ -43,5 +43,24 @@ export const lambdaHandler = async (event) => {
     }
   }
 
+  // 타입 상성 조회
+  if (httpMethod === "GET" && path === "/battle/type-effectiveness") {
+    try {
+      const attacker = queryStringParameters?.attacker;
+      const defender = queryStringParameters?.defender;
+      if (!attacker || !defender) {
+        return badRequest("Missing attacker or defender type");
+      }
+
+      const { fetchTypeEffectiveness } = await import(
+        "./service/fetchTypeEffectiveness.mjs"
+      );
+      const result = await fetchTypeEffectiveness(attacker, defender);
+      return ok(result);
+    } catch (err) {
+      return internalError(err.message || "Failed to fetch type effectiveness");
+    }
+  }
+
   return badRequest("Invalid request");
 };
