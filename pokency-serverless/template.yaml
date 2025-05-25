@@ -47,10 +47,20 @@ Resources:
           Properties:
             Path: /pokemon/{name}/evolution
             Method: get
+        GetPokemonMoves:
+          Type: Api
+          Properties:
+            Path: /pokemon/{name}/moves
+            Method: get
         GetTypeEffectiveness:
           Type: Api
           Properties:
             Path: /battle/type-effectiveness
+            Method: get
+        WeatherEffect:
+          Type: Api
+          Properties:
+            Path: /battle/weather-effect
             Method: get
 
   ApplicationResourceGroup:

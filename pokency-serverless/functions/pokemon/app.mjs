@@ -33,6 +33,22 @@ export const lambdaHandler = async (event) => {
     }
   }
 
+  // 포켓몬 기술 목록 조회
+  if (httpMethod === "GET" && path.match(/^\/pokemon\/[^/]+\/moves$/)) {
+    try {
+      const name = pathParameters?.name;
+      if (!name) return badRequest("Missing Pokémon name in path");
+
+      const { fetchPokemonMoves } = await import(
+        "./service/fetchPokemonMoves.mjs"
+      );
+      const data = await fetchPokemonMoves(name);
+      return ok(data);
+    } catch (err) {
+      return internalError(err.message || "Failed to fetch Pokémon moves");
+    }
+  }
+
   // 단일 조회
   if (httpMethod === "GET" && pathParameters?.name) {
     try {
