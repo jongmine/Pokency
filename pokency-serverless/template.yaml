@@ -62,11 +62,6 @@ Resources:
           Properties:
             Path: /battle/type-effectiveness
             Method: get
-        WeatherEffect:
-          Type: Api
-          Properties:
-            Path: /battle/weather-effect
-            Method: get
 
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group
