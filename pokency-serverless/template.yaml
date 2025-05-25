@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
   pokency-serverless
@@ -17,19 +17,25 @@ Globals:
   Api:
     TracingEnabled: true
 Resources:
-  HelloWorldFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+  GetPokemonFunction:
+    Type: AWS::Serverless::Function
     Properties:
-      CodeUri: hello-world/
+      FunctionName: getPokemonFunction
+      CodeUri: functions/pokemon/
       Handler: app.lambdaHandler
       Runtime: nodejs22.x
       Architectures:
-      - x86_64
+        - x86_64
+      Description: Return data of a Pokémon from PokéAPI
+      MemorySize: 128
+      Timeout: 10
+      Policies:
+        - AWSLambdaBasicExecutionRole
       Events:
-        HelloWorld:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+        GetPokemon:
+          Type: Api
           Properties:
-            Path: /hello
+            Path: /pokemon/{name}
             Method: get
 
   ApplicationResourceGroup:
@@ -44,17 +50,14 @@ Resources:
     Properties:
       ResourceGroupName:
         Ref: ApplicationResourceGroup
-      AutoConfigurationEnabled: 'true'
+      AutoConfigurationEnabled: "true"
 Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  HelloWorldApi:
-    Description: API Gateway endpoint URL for Prod stage for Hello World function
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  HelloWorldFunction:
-    Description: Hello World Lambda Function ARN
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
-    Description: Implicit IAM Role created for Hello World function
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+  GetPokemonApi:
+    Description: API Gateway endpoint URL for Prod stage for GetPokemon function
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/pokemon/pikachu"
+  GetPokemonFunction:
+    Description: GetPokemon Lambda Function ARN
+    Value: !GetAtt GetPokemonFunction.Arn
+  GetPokemonFunctionIamRole:
+    Description: Implicit IAM Role created for GetPokemon function
+    Value: !GetAtt GetPokemonFunctionRole.Arn
