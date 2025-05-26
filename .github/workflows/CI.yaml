@@ -2,9 +2,13 @@ name: CI
 
 on:
   push:
+    paths:
+      - "pokency-serverless/**"
     branches:
       - main
   pull_request:
+    paths:
+      - "pokency-serverless/**"
     branches:
       - "**"
 
