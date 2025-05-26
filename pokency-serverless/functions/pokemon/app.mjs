@@ -100,5 +100,34 @@ export const lambdaHandler = async (event) => {
     }
   }
 
+  // 배틀 시작
+  if (httpMethod === "POST" && path === "/battle/start") {
+    try {
+      const body = event.body ? JSON.parse(event.body) : {};
+      const playerName = body?.playerName;
+      if (!playerName) return badRequest("Missing playerName in request body");
+
+      const { startBattle } = await import("./service/startBattle.mjs");
+      const result = await startBattle(playerName);
+      return ok(result);
+    } catch (err) {
+      return internalError(err.message || "Failed to start battle");
+    }
+  }
+
+  // 턴 실행 (배틀 중 한 턴 진행)
+  if (httpMethod === "POST" && path === "/battle/turn") {
+    try {
+      const params = JSON.parse(event.body);
+      const { user, enemy, userMove } = params;
+      const { executeTurn } = await import("./service/executeTurn.mjs");
+      const result = await executeTurn(user, enemy, userMove);
+      return ok(result);
+    } catch (err) {
+      console.error("[/battle/turn] error:", err);
+      return internalError(err.message || "Failed to execute battle turn");
+    }
+  }
+
   return badRequest("Invalid request");
 };
