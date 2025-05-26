@@ -1,0 +1,38 @@
+export default function PokemonCard({ pokemon, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className="
+        group flex flex-col items-center
+        !bg-white
+        rounded-3xl shadow-xl p-6
+        border-2 border-fuchsia-100
+        hover:bg-fuchsia-50 hover:border-fuchsia-300
+        active:bg-fuchsia-100
+        transition
+        focus-visible:ring-2 focus-visible:ring-fuchsia-300 cursor-pointer
+      "
+      style={{ minWidth: 0, minHeight: 0 }}
+    >
+      <div
+        className="w-24 h-24 flex items-center justify-center rounded-full
+        bg-gradient-to-br from-indigo-200 via-pink-100 to-sky-200 mb-3 shadow-inner overflow-hidden
+        border-2 border-fuchsia-200 group-hover:border-fuchsia-300 transition
+      "
+      >
+        <img
+          src={pokemon.sprite}
+          alt={pokemon.name_ko}
+          className="w-20 h-20 object-contain transition group-hover:scale-110"
+          loading="lazy"
+        />
+      </div>
+      <span className="font-bold text-lg text-indigo-700 mb-1 tracking-tight">
+        {pokemon.name_ko}
+      </span>
+      <span className="text-xs text-fuchsia-500">
+        #{String(pokemon.id).padStart(3, "0")}
+      </span>
+    </button>
+  );
+}
