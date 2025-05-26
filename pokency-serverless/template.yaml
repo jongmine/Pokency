@@ -67,6 +67,11 @@ Resources:
           Properties:
             Path: /battle/start
             Method: post
+        BattleTurn:
+          Type: Api
+          Properties:
+            Path: /battle/turn
+            Method: post
 
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group
