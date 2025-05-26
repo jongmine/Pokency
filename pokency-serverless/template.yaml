@@ -62,6 +62,11 @@ Resources:
           Properties:
             Path: /battle/type-effectiveness
             Method: get
+        StartBattle:
+          Type: Api
+          Properties:
+            Path: /battle/start
+            Method: post
 
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group
@@ -86,3 +91,6 @@ Outputs:
   GetPokemonFunctionIamRole:
     Description: Implicit IAM Role created for GetPokemon function
     Value: !GetAtt GetPokemonFunctionRole.Arn
+  StartBattleApi:
+    Description: API Gateway endpoint URL for Prod stage for StartBattle function
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/battle/start"

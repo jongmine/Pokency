@@ -100,5 +100,20 @@ export const lambdaHandler = async (event) => {
     }
   }
 
+  // 배틀 시작
+  if (httpMethod === "POST" && path === "/battle/start") {
+    try {
+      const body = event.body ? JSON.parse(event.body) : {};
+      const playerName = body?.playerName;
+      if (!playerName) return badRequest("Missing playerName in request body");
+
+      const { startBattle } = await import("./service/startBattle.mjs");
+      const result = await startBattle(playerName);
+      return ok(result);
+    } catch (err) {
+      return internalError(err.message || "Failed to start battle");
+    }
+  }
+
   return badRequest("Invalid request");
 };
