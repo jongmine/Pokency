@@ -1,11 +1,14 @@
 export async function fetchPokemonData(name) {
+  console.time(`[fetchPokemonData] ${name}`);
   const pokemonUrl = `https://pokeapi.co/api/v2/pokemon/${name}`;
   const speciesUrl = `https://pokeapi.co/api/v2/pokemon-species/${name}`;
 
+  console.time(`[fetchPokemonData] fetch api 2회: ${name}`);
   const [pokemonResponse, speciesResponse] = await Promise.all([
     fetch(pokemonUrl),
     fetch(speciesUrl),
   ]);
+  console.timeEnd(`[fetchPokemonData] fetch api 2회: ${name}`);
 
   if (!pokemonResponse.ok) {
     throw new Error(`Pokémon "${name}" not found`);
@@ -21,6 +24,8 @@ export async function fetchPokemonData(name) {
     .find((e) => e.language.name === "ko")
     ?.flavor_text?.replace(/\f/g, " ")
     .replace(/\n/g, " ");
+
+  console.timeEnd(`[fetchPokemonData] ${name}`);
 
   return {
     name: data.name,

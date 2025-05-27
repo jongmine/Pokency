@@ -16,16 +16,21 @@ function selectRandomMoves(moves) {
 }
 
 export const startBattle = async (userPokemonName) => {
+  console.time(`[startBattle] 전체`);
+  console.log(`[startBattle] 시작: 유저 포켓몬 = ${userPokemonName}`);
   const allPokemon = await fetchPokemonList(200, 0);
 
   const enemyPokemonName = allPokemon[getRandomInt(allPokemon.length)].name;
+  console.log(`[startBattle] 적 포켓몬 선택: ${enemyPokemonName}`);
 
+  console.time(`[startBattle] userData, userMoves, enemyData, enemyMoves fetch`);
   const [userData, userMoves, enemyData, enemyMoves] = await Promise.all([
     fetchPokemonData(userPokemonName),
     fetchPokemonMoves(userPokemonName),
     fetchPokemonData(enemyPokemonName),
     fetchPokemonMoves(enemyPokemonName),
   ]);
+  console.timeEnd(`[startBattle] userData, userMoves, enemyData, enemyMoves fetch`);
 
   const userSelectedMoves = selectRandomMoves(userMoves.moves).map((m) => ({
     name: m.name,
@@ -49,6 +54,7 @@ export const startBattle = async (userPokemonName) => {
     description_ko: m.description_ko,
   }));
 
+  console.timeEnd(`[startBattle] 전체`);
   return {
     user: {
       name: userData.name,
