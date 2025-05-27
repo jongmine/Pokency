@@ -81,6 +81,12 @@ export default function BattlePage() {
     setDamageNumber(null);
   };
 
+  useEffect(() => {
+    if (gameOver && result) {
+      saveBattleResult(result);
+    }
+  }, [gameOver, result]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-200 via-yellow-100 to-blue-100 flex flex-col items-center justify-center py-8 px-2 relative">
       {/* 상단 영역(상대) */}
@@ -172,4 +178,13 @@ export default function BattlePage() {
       </style>
     </div>
   );
+}
+
+function saveBattleResult(result) {
+  const prev = JSON.parse(localStorage.getItem("battleHistory") || "[]");
+  const next = [{ date: new Date().toISOString(), result }, ...prev].slice(
+    0,
+    5
+  );
+  localStorage.setItem("battleHistory", JSON.stringify(next));
 }
