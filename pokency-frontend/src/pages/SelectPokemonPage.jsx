@@ -1,5 +1,7 @@
 import PokemonCard from "../components/PokemonCard";
+import PokemonDetailModal from "../components/PokemonDetailModal";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const MOCK_POKEMONS = [
   // ...12개 이상 채워도 OK
@@ -93,6 +95,11 @@ const PAGE_SIZE = 12;
 
 export default function SelectPokemonPage() {
   const [page, setPage] = useState(0);
+  const [selectedPokemon, setSelectedPokemon] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [battlePokemon, setBattlePokemon] = useState(null);
+  const navigate = useNavigate();
+
   const total = MOCK_POKEMONS.length;
   const maxPage = Math.ceil(total / PAGE_SIZE) - 1;
   const pagePokemons = MOCK_POKEMONS.slice(
@@ -101,7 +108,19 @@ export default function SelectPokemonPage() {
   );
 
   const handleSelect = (pokemon) => {
-    alert(`'${pokemon.name_ko || pokemon.name}'(을)를 선택했습니다!`);
+    setSelectedPokemon(pokemon); // 객체 전체를 props로 넘겨도 무방
+    setDrawerOpen(true);
+  };
+
+  const handleClose = () => {
+    setDrawerOpen(false);
+    setSelectedPokemon(null);
+  };
+
+  const handleBattleSelect = (pokemon) => {
+    setBattlePokemon(pokemon);
+    setDrawerOpen(false);
+    setSelectedPokemon(null);
   };
 
   return (
@@ -115,25 +134,63 @@ export default function SelectPokemonPage() {
             key={pokemon.id}
             pokemon={pokemon}
             onClick={() => handleSelect(pokemon)}
+            isSelected={battlePokemon?.id === pokemon.id}
           />
         ))}
       </div>
       <div className="flex gap-4">
         <button
-          className="bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-3 px-6 rounded-2xl shadow-lg transition duration-300 ease-in-out disabled:bg-yellow-200"
+          className="bg-yellow-300 hover:bg-yellow-400 border-2 border-yellow-400 text-yellow-900 font-extrabold py-3 px-6 rounded-3xl shadow-lg transition duration-300 ease-in-out disabled:bg-yellow-200"
           onClick={() => setPage((p) => p - 1)}
           disabled={page === 0}
         >
           이전
         </button>
         <button
-          className="bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-3 px-6 rounded-2xl shadow-lg transition duration-300 ease-in-out disabled:bg-yellow-200"
+          className="bg-yellow-300 hover:bg-yellow-400 border-2 border-yellow-400 text-yellow-900 font-extrabold py-3 px-6 rounded-3xl shadow-lg transition duration-300 ease-in-out disabled:bg-yellow-200"
           onClick={() => setPage((p) => p + 1)}
           disabled={page === maxPage}
         >
           다음
         </button>
       </div>
+      <PokemonDetailModal
+        open={drawerOpen}
+        onClose={handleClose}
+        selectedPokemon={selectedPokemon}
+        onSelect={handleBattleSelect}
+      />
+      {battlePokemon && (
+        <>
+          <div className="mt-8 bg-white rounded-3xl shadow-xl border-2 border-orange-200 p-5 flex items-center gap-4 w-full max-w-md">
+            <img
+              src={battlePokemon.sprite}
+              alt={battlePokemon.name_ko}
+              className="w-24 h-24 rounded-full border-2 border-orange-300 bg-orange-50"
+            />
+            <div>
+              <div className="text-orange-500 text-2xl font-extrabold">
+                {battlePokemon.name_ko}
+              </div>
+              <div className="text-orange-200 text-lg font-semibold">
+                #{battlePokemon.id}
+              </div>
+            </div>
+          </div>
+          <button
+            className="bg-orange-300 hover:bg-orange-400 border-2 border-orange-400 text-orange-900 rounded-3xl shadow-lg py-4 px-10 text-lg font-extrabold mt-4"
+            onClick={() => {
+              alert(`배틀하러 갑니다! 선택 포켓몬: ${battlePokemon.name_ko}`);
+              navigate("/battle", {
+                state: { pokemon: battlePokemon },
+              });
+              //   navigate("/battle")
+            }}
+          >
+            배틀하러 가기
+          </button>
+        </>
+      )}
     </div>
   );
 }

@@ -1,8 +1,8 @@
-export default function PokemonCard({ pokemon, onClick }) {
+export default function PokemonCard({ pokemon, onClick, isSelected }) {
   return (
     <button
       onClick={onClick}
-      className="
+      className={`
         group flex flex-col items-center
         !bg-white
         rounded-3xl shadow-xl p-6
@@ -11,14 +11,20 @@ export default function PokemonCard({ pokemon, onClick }) {
         active:bg-fuchsia-100
         transition
         focus-visible:ring-2 focus-visible:ring-fuchsia-300 cursor-pointer
-      "
+        ${
+          isSelected
+            ? "ring-4 ring-orange-400 scale-105 z-10 border-orange-300"
+            : ""
+        }
+      `}
       style={{ minWidth: 0, minHeight: 0 }}
     >
       <div
-        className="w-24 h-24 flex items-center justify-center rounded-full
-        bg-gradient-to-br from-indigo-200 via-pink-100 to-sky-200 mb-3 shadow-inner overflow-hidden
-        border-2 border-fuchsia-200 group-hover:border-fuchsia-300 transition
-      "
+        className={`
+          w-24 h-24 flex items-center justify-center rounded-full
+          bg-gradient-to-br from-indigo-200 via-pink-100 to-sky-200 mb-3 shadow-inner overflow-hidden
+          border-2 border-fuchsia-200 group-hover:border-fuchsia-300 transition
+        `}
       >
         <img
           src={pokemon.sprite}
