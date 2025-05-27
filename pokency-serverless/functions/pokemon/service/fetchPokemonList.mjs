@@ -14,24 +14,20 @@ export async function fetchPokemonList({ limit = 20, offset = 0 }) {
   console.time(`[fetchPokemonList] species 한글명 fetch`);
   const localizedList = await Promise.all(
     data.results.map(async (pokemon) => {
-      // id 추출 (가장 중요!)
       const id = Number(pokemon.url.split("/").filter(Boolean).pop());
-      // 한글명 fetch
       let koreanName = pokemon.name;
       try {
-        const res = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${pokemon.name}`);
+        const res = await fetch(
+          `https://pokeapi.co/api/v2/pokemon-species/${pokemon.name}`
+        );
         if (res.ok) {
           const species = await res.json();
           const koreanNameEntry = species.names.find(
             (entry) => entry.language.name === "ko"
           );
-          if (koreanNameEntry) {
-            koreanName = koreanNameEntry.name;
-          }
+          if (koreanNameEntry) koreanName = koreanNameEntry.name;
         }
-      } catch (e) {
-        // ignore, fallback to english
-      }
+      } catch (e) {}
       return {
         name: pokemon.name,
         name_ko: koreanName,
@@ -42,8 +38,12 @@ export async function fetchPokemonList({ limit = 20, offset = 0 }) {
       };
     })
   );
+
   console.timeEnd(`[fetchPokemonList] species 한글명 fetch`);
   console.timeEnd(`[fetchPokemonList] 전체`);
 
-  return localizedList;
+  return {
+    results: localizedList,
+    count: data.count,
+  };
 }
