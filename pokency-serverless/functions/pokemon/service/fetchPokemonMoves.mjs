@@ -1,12 +1,16 @@
 const API_BASE = "https://pokeapi.co/api/v2";
 
 export const fetchPokemonMoves = async (name) => {
+  console.time(`[fetchPokemonMoves] ${name}`);
   const res = await fetch(`${API_BASE}/pokemon/${name.toLowerCase()}`);
   if (!res.ok) throw new Error("Failed to fetch Pokémon data");
 
   const pokemonData = await res.json();
 
-  const movePromises = pokemonData.moves.map(async (moveEntry) => {
+  console.log(`[fetchPokemonMoves] ${name}의 기술 수: ${pokemonData.moves.length}`);
+
+  console.time(`[fetchPokemonMoves] move 상세 fetch: ${name}`);
+  const movePromises = pokemonData.moves.map(async (moveEntry, idx) => {
     const moveName = moveEntry.move.name;
 
     // move 상세정보 가져오기
@@ -35,6 +39,11 @@ export const fetchPokemonMoves = async (name) => {
       version_group: detail.version_group.name,
     }));
 
+    if (idx % 10 === 0) {
+      // 10개 단위마다 진행상황 로깅
+      console.log(`[fetchPokemonMoves] ${name}: ${idx + 1}/${pokemonData.moves.length} 기술 fetch 중`);
+    }
+
     return {
       name: moveName,
       name_ko: koreanName,
@@ -49,6 +58,8 @@ export const fetchPokemonMoves = async (name) => {
   });
 
   const moves = (await Promise.all(movePromises)).filter((m) => m !== null);
+  console.timeEnd(`[fetchPokemonMoves] move 상세 fetch: ${name}`);
+  console.timeEnd(`[fetchPokemonMoves] ${name}`);
 
   return {
     pokemon: pokemonData.name,
