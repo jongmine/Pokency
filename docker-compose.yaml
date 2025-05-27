@@ -1,0 +1,14 @@
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: proxy/Dockerfile
+    container_name: nginx-proxy
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    networks:
+      - pokency-network
+networks:
+  pokency-network:
+    driver: bridge
