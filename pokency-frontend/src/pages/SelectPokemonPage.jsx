@@ -1,114 +1,64 @@
 import PokemonCard from "../components/PokemonCard";
 import PokemonDetailModal from "../components/PokemonDetailModal";
 import RecentBattleHistory from "../components/RecentBattleHistory";
+import { fetchPokemonList } from "../api/pokemon";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
-const MOCK_POKEMONS = [
-  // ...12개 이상 채워도 OK
-  {
-    name: "bulbasaur",
-    name_ko: "이상해씨",
-    id: 1,
-    sprite:
-      "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png",
-  },
-  {
-    name: "charmander",
-    name_ko: "파이리",
-    id: 4,
-    sprite:
-      "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png",
-  },
-  {
-    name: "squirtle",
-    name_ko: "꼬부기",
-    id: 7,
-    sprite:
-      "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png",
-  },
-  {
-    name: "pikachu",
-    name_ko: "피카츄",
-    id: 25,
-    sprite:
-      "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png",
-  },
-  {
-    name: "eevee",
-    name_ko: "이브이",
-    id: 133,
-    sprite:
-      "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/133.png",
-  },
-  {
-    name: "jigglypuff",
-    name_ko: "푸린",
-    id: 39,
-    sprite:
-      "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/39.png",
-  },
-  {
-    name: "snorlax",
-    name_ko: "잠만보",
-    id: 143,
-    sprite:
-      "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/143.png",
-  },
-  {
-    name: "psyduck",
-    name_ko: "고라파덕",
-    id: 54,
-    sprite:
-      "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/54.png",
-  },
-  {
-    name: "gengar",
-    name_ko: "팬텀",
-    id: 94,
-    sprite:
-      "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png",
-  },
-  {
-    name: "meowth",
-    name_ko: "나옹",
-    id: 52,
-    sprite:
-      "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/52.png",
-  },
-  {
-    name: "magikarp",
-    name_ko: "잉어킹",
-    id: 129,
-    sprite:
-      "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/129.png",
-  },
-  {
-    name: "mew",
-    name_ko: "뮤",
-    id: 151,
-    sprite:
-      "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/151.png",
-  },
-];
 
 const PAGE_SIZE = 8;
 
 export default function SelectPokemonPage() {
+  const [pokemons, setPokemons] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [selectedPokemon, setSelectedPokemon] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [battlePokemon, setBattlePokemon] = useState(null);
   const [recentPokemonId, setRecentPokemonId] = useState(null); // 최근 포켓몬 id
   const [battleHistory, setBattleHistory] = useState([]);
+  const [totalCount, setTotalCount] = useState(0); // 전체 포켓몬 개수
   const navigate = useNavigate();
 
-  const total = MOCK_POKEMONS.length;
-  const maxPage = Math.ceil(total / PAGE_SIZE) - 1;
-  const pagePokemons = MOCK_POKEMONS.slice(
-    page * PAGE_SIZE,
-    (page + 1) * PAGE_SIZE
-  );
+  // 포켓몬 목록을 fetch (페이지네이션 반영)
+  useEffect(() => {
+    setLoading(true);
+    fetchPokemonList({ limit: PAGE_SIZE, offset: page * PAGE_SIZE })
+      .then((data) => {
+        // 로깅: 응답 타입 및 내용
+        console.log(
+          "[Pokency] 포켓몬 API 응답:",
+          data,
+          "타입:",
+          typeof data,
+          "isArray:",
+          Array.isArray(data)
+        );
+        let list = [];
+        // 배열 또는 {results: []} 구조 모두 대응
+        if (Array.isArray(data)) {
+          list = data;
+        } else if (data && Array.isArray(data.results)) {
+          list = data.results;
+        } else {
+          console.warn("[Pokency] API 응답이 배열이 아닙니다!", data);
+          list = [];
+        }
+        setPokemons(list);
+        setTotalCount(
+          list.length < PAGE_SIZE && page === 0
+            ? list.length
+            : (page + 1) * PAGE_SIZE + list.length
+        ); // 임시 (totalCount API가 없으면)
+      })
+      .catch((err) => {
+        console.error("[Pokency] 포켓몬 목록 요청 실패!", err);
+        setPokemons([]);
+        setTotalCount(0);
+      })
+      .finally(() => setLoading(false));
+  }, [page]);
+
+  const maxPage = totalCount > 0 ? Math.ceil(totalCount / PAGE_SIZE) - 1 : 0;
 
   const handleSelect = (pokemon) => {
     setSelectedPokemon(pokemon);
@@ -147,33 +97,47 @@ export default function SelectPokemonPage() {
       <h1 className="text-4xl font-extrabold mb-8 tracking-tight bg-gradient-to-r from-yellow-500 to-orange-400 bg-clip-text text-transparent drop-shadow-md">
         배틀할 포켓몬을 선택하세요!
       </h1>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-8 w-full max-w-5xl mb-10">
-        {pagePokemons.map((pokemon) => (
-          <PokemonCard
-            key={pokemon.id}
-            pokemon={pokemon}
-            onClick={() => handleSelect(pokemon)}
-            isSelected={battlePokemon?.id === pokemon.id}
-            isRecent={recentPokemonId === pokemon.id} // 최근 포켓몬 뱃지
-          />
-        ))}
-      </div>
-      <div className="flex gap-4">
-        <button
-          className="bg-yellow-300 hover:bg-yellow-400 border-2 border-yellow-400 text-yellow-900 font-extrabold py-3 px-6 rounded-3xl shadow-lg transition duration-300 ease-in-out disabled:bg-yellow-200"
-          onClick={() => setPage((p) => p - 1)}
-          disabled={page === 0}
-        >
-          이전
-        </button>
-        <button
-          className="bg-yellow-300 hover:bg-yellow-400 border-2 border-yellow-400 text-yellow-900 font-extrabold py-3 px-6 rounded-3xl shadow-lg transition duration-300 ease-in-out disabled:bg-yellow-200"
-          onClick={() => setPage((p) => p + 1)}
-          disabled={page === maxPage}
-        >
-          다음
-        </button>
-      </div>
+      {loading ? (
+        <div className="text-lg text-yellow-500 my-24">
+          포켓몬을 불러오는 중...
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-8 w-full max-w-5xl mb-10">
+            {Array.isArray(pokemons) && pokemons.length > 0 ? (
+              pokemons.map((pokemon) => (
+                <PokemonCard
+                  key={pokemon.id || pokemon.name}
+                  pokemon={pokemon}
+                  onClick={() => handleSelect(pokemon)}
+                  isSelected={battlePokemon?.id === pokemon.id}
+                  isRecent={recentPokemonId === pokemon.id}
+                />
+              ))
+            ) : (
+              <div className="col-span-full text-gray-400 text-center py-10">
+                포켓몬 데이터가 없습니다.
+              </div>
+            )}
+          </div>
+          <div className="flex gap-4">
+            <button
+              className="bg-yellow-300 hover:bg-yellow-400 border-2 border-yellow-400 text-yellow-900 font-extrabold py-3 px-6 rounded-3xl shadow-lg transition duration-300 ease-in-out disabled:bg-yellow-200"
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0}
+            >
+              이전
+            </button>
+            <button
+              className="bg-yellow-300 hover:bg-yellow-400 border-2 border-yellow-400 text-yellow-900 font-extrabold py-3 px-6 rounded-3xl shadow-lg transition duration-300 ease-in-out disabled:bg-yellow-200"
+              onClick={() => setPage((p) => p + 1)}
+              disabled={pokemons.length < PAGE_SIZE}
+            >
+              다음
+            </button>
+          </div>
+        </>
+      )}
       <PokemonDetailModal
         open={drawerOpen}
         onClose={handleClose}
@@ -198,9 +162,8 @@ export default function SelectPokemonPage() {
             </div>
           </div>
           <button
-            className="bg-orange-300 hover:bg-orange-400 ... "
+            className="bg-orange-300 hover:bg-orange-400 border-2 border-orange-400 text-yellow-900 font-extrabold py-3 px-8 mt-3 rounded-3xl shadow-lg transition duration-300 ease-in-out"
             onClick={() => {
-              // localStorage와 recentPokemonId 갱신은 여기서!
               localStorage.setItem(
                 "lastSelectedPokemon",
                 JSON.stringify(battlePokemon)
