@@ -1,4 +1,4 @@
-export async function fetchPokemonList(limit = 20, offset = 0) {
+export async function fetchPokemonList({ limit = 20, offset = 0 }) {
   console.time(`[fetchPokemonList] 전체`);
   const url = `https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${offset}`;
   console.time(`[fetchPokemonList] pokemon 리스트`);
@@ -14,25 +14,31 @@ export async function fetchPokemonList(limit = 20, offset = 0) {
   console.time(`[fetchPokemonList] species 한글명 fetch`);
   const localizedList = await Promise.all(
     data.results.map(async (pokemon) => {
-      const res = await fetch(
-        `https://pokeapi.co/api/v2/pokemon-species/${pokemon.name}`
-      );
-      if (!res.ok) {
-        return {
-          name: pokemon.name,
-          url: pokemon.url,
-        };
+      // id 추출 (가장 중요!)
+      const id = Number(pokemon.url.split("/").filter(Boolean).pop());
+      // 한글명 fetch
+      let koreanName = pokemon.name;
+      try {
+        const res = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${pokemon.name}`);
+        if (res.ok) {
+          const species = await res.json();
+          const koreanNameEntry = species.names.find(
+            (entry) => entry.language.name === "ko"
+          );
+          if (koreanNameEntry) {
+            koreanName = koreanNameEntry.name;
+          }
+        }
+      } catch (e) {
+        // ignore, fallback to english
       }
-      const species = await res.json();
-      const koreanNameEntry = species.names.find(
-        (entry) => entry.language.name === "ko"
-      );
-      const koreanName = koreanNameEntry ? koreanNameEntry.name : pokemon.name;
-
       return {
         name: pokemon.name,
         name_ko: koreanName,
         url: pokemon.url,
+        id,
+        sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`,
+        official_artwork: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`,
       };
     })
   );
