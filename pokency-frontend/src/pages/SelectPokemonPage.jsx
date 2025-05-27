@@ -1,6 +1,7 @@
 import PokemonCard from "../components/PokemonCard";
 import PokemonDetailModal from "../components/PokemonDetailModal";
-import { useState } from "react";
+import RecentBattleHistory from "../components/RecentBattleHistory";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const MOCK_POKEMONS = [
@@ -91,13 +92,15 @@ const MOCK_POKEMONS = [
   },
 ];
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 8;
 
 export default function SelectPokemonPage() {
   const [page, setPage] = useState(0);
   const [selectedPokemon, setSelectedPokemon] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [battlePokemon, setBattlePokemon] = useState(null);
+  const [recentPokemonId, setRecentPokemonId] = useState(null); // 최근 포켓몬 id
+  const [battleHistory, setBattleHistory] = useState([]);
   const navigate = useNavigate();
 
   const total = MOCK_POKEMONS.length;
@@ -108,7 +111,7 @@ export default function SelectPokemonPage() {
   );
 
   const handleSelect = (pokemon) => {
-    setSelectedPokemon(pokemon); // 객체 전체를 props로 넘겨도 무방
+    setSelectedPokemon(pokemon);
     setDrawerOpen(true);
   };
 
@@ -123,6 +126,22 @@ export default function SelectPokemonPage() {
     setSelectedPokemon(null);
   };
 
+  // 최근 선택 포켓몬 복원
+  useEffect(() => {
+    const last = localStorage.getItem("lastSelectedPokemon");
+    if (last) {
+      const lastPokemon = JSON.parse(last);
+      setBattlePokemon(lastPokemon);
+      setRecentPokemonId(lastPokemon.id);
+    }
+  }, []);
+
+  // 최근 5개 배틀 기록 불러오기
+  useEffect(() => {
+    const history = JSON.parse(localStorage.getItem("battleHistory") || "[]");
+    setBattleHistory(history);
+  }, []);
+
   return (
     <div className="min-h-screen bg-yellow-100 flex flex-col items-center py-14 px-4">
       <h1 className="text-4xl font-extrabold mb-8 tracking-tight bg-gradient-to-r from-yellow-500 to-orange-400 bg-clip-text text-transparent drop-shadow-md">
@@ -135,6 +154,7 @@ export default function SelectPokemonPage() {
             pokemon={pokemon}
             onClick={() => handleSelect(pokemon)}
             isSelected={battlePokemon?.id === pokemon.id}
+            isRecent={recentPokemonId === pokemon.id} // 최근 포켓몬 뱃지
           />
         ))}
       </div>
@@ -178,19 +198,25 @@ export default function SelectPokemonPage() {
             </div>
           </div>
           <button
-            className="bg-orange-300 hover:bg-orange-400 border-2 border-orange-400 text-orange-900 rounded-3xl shadow-lg py-4 px-10 text-lg font-extrabold mt-4"
+            className="bg-orange-300 hover:bg-orange-400 ... "
             onClick={() => {
+              // localStorage와 recentPokemonId 갱신은 여기서!
+              localStorage.setItem(
+                "lastSelectedPokemon",
+                JSON.stringify(battlePokemon)
+              );
+              setRecentPokemonId(battlePokemon.id);
               alert(`배틀하러 갑니다! 선택 포켓몬: ${battlePokemon.name_ko}`);
-              navigate("/battle", {
-                state: { pokemon: battlePokemon },
-              });
-              //   navigate("/battle")
+              navigate("/battle", { state: { pokemon: battlePokemon } });
             }}
           >
             배틀하러 가기
           </button>
         </>
       )}
+
+      {/* 최근 5개 배틀 결과 */}
+      <RecentBattleHistory history={battleHistory} />
     </div>
   );
 }
