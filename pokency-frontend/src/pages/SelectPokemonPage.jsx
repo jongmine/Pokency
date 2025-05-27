@@ -4,6 +4,7 @@ import RecentBattleHistory from "../components/RecentBattleHistory";
 import { fetchPokemonList } from "../api/pokemon";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { usePokemonStore } from "../store/pokemonStore";
 
 const PAGE_SIZE = 8;
 
@@ -11,13 +12,16 @@ export default function SelectPokemonPage() {
   const [pokemons, setPokemons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
-  const [selectedPokemon, setSelectedPokemon] = useState(null);
+  const [selectedPokemon, setSelectedPokemonLocal] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [battlePokemon, setBattlePokemon] = useState(null);
   const [recentPokemonId, setRecentPokemonId] = useState(null); // 최근 포켓몬 id
   const [battleHistory, setBattleHistory] = useState([]);
   const [totalCount, setTotalCount] = useState(0); // 전체 포켓몬 개수
   const navigate = useNavigate();
+  const setSelectedPokemon = usePokemonStore(
+    (state) => state.setSelectedPokemon
+  );
 
   // 포켓몬 목록을 fetch (페이지네이션 반영)
   useEffect(() => {
@@ -61,19 +65,20 @@ export default function SelectPokemonPage() {
   const maxPage = totalCount > 0 ? Math.ceil(totalCount / PAGE_SIZE) - 1 : 0;
 
   const handleSelect = (pokemon) => {
-    setSelectedPokemon(pokemon);
+    setSelectedPokemonLocal(pokemon);
     setDrawerOpen(true);
   };
 
   const handleClose = () => {
     setDrawerOpen(false);
-    setSelectedPokemon(null);
+    setSelectedPokemonLocal(null);
   };
 
   const handleBattleSelect = (pokemon) => {
     setBattlePokemon(pokemon);
+    setSelectedPokemon(pokemon);
     setDrawerOpen(false);
-    setSelectedPokemon(null);
+    setSelectedPokemonLocal(null);
   };
 
   // 최근 선택 포켓몬 복원
@@ -170,7 +175,7 @@ export default function SelectPokemonPage() {
               );
               setRecentPokemonId(battlePokemon.id);
               alert(`배틀하러 갑니다! 선택 포켓몬: ${battlePokemon.name_ko}`);
-              navigate("/battle", { state: { pokemon: battlePokemon } });
+              navigate("/battle");
             }}
           >
             배틀하러 가기
